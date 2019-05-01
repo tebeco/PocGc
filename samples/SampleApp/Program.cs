@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Runtime;
+using System;
 
-namespace SampleApp2
+namespace SampleApp
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var hostBuilder = new RuntimeHostBuilder<Startup>();
+            var host = hostBuilder.Build();
+            host.Run();
         }
     }
 }
