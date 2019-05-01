@@ -6,6 +6,11 @@ namespace Runtime
 {
     public abstract class RuntimeHost : ReferenceType
     {
+        public RuntimeHost()
+        {
+
+        }
+
         public abstract void Run();
     }
 }

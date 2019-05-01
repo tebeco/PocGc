@@ -1,92 +1,157 @@
 using NFluent;
+using Runtime;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Gc.Core.Tests
+namespace Runtime.Tests
 {
     public class ReferenceTypeTests
     {
         [Fact]
-        public void Should_not_be_able_to_add_twice_same_instance_reference_field()
+        public void Should_not_be_able_to_add_reference_field_after_ctor()
         {
             //Given
             var refType = new ProxyReferenceType();
             var initialValue = new ProxyReferenceType();
 
             //When
-            refType.AddField("dummyField", initialValue);
-
             //Then
-            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).Throws<ArgumentException>();
+            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).Throws<InvalidOperationException>();
         }
 
         [Fact]
-        public void Should_not_be_able_to_add_twice_same_instance_value_field()
+        public void Should_not_be_able_to_add_vakue_field_after_ctor()
         {
             //Given
             var refType = new ProxyReferenceType();
-            var initialValue = 1;
 
             //When
-            refType.AddField("dummyField", initialValue);
-
             //Then
-            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).Throws<ArgumentException>();
+            Check.ThatCode(() => refType.AddField("dummyField", 1)).Throws<InvalidOperationException>();
         }
 
         [Fact]
         public void Should_be_able_to_add_instance_reference_field_with_initial_value()
         {
             //Given
-            var refType = new ProxyReferenceType();
-            var initialValue = new ProxyReferenceType();
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {"dummyField", new ProxyReferenceType()},
+            };
 
-            //When Then
-            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).DoesNotThrow();
+            //When
+            //Then
+            Check.ThatCode(() => new ProxyReferenceType(referenceFields)).DoesNotThrow();
         }
 
         [Fact]
         public void Should_be_able_to_add_instance_value_field_with_initial_value()
         {
             //Given
-            var refType = new ProxyReferenceType();
-            var initialValue = false;
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {"dummyField", false},
+            };
 
-            //When Then
-            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).DoesNotThrow();
+            //When
+            //Then
+            Check.ThatCode(() => new ProxyReferenceType(valueFields)).DoesNotThrow();
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_reference_field_value()
+        public void Should_be_able_to_add_both_ref_and_value_field_with_initial_value()
+        {
+            //Given
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {"dummyField", new ProxyReferenceType()},
+            };
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {"value", false},
+            };
+
+            //When
+            //Then
+            Check.ThatCode(() => new ProxyReferenceType(referenceFields, valueFields)).DoesNotThrow();
+        }
+
+        [Fact]
+        public void Should_not_be_able_to_add_both_ref_and_value_field_with_same_name_from_auto_ctor()
+        {
+            //Given
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {"dummyField", new ProxyReferenceType()},
+            };
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {"dummyField", false},
+            };
+
+            //When
+            //Then
+            Check.ThatCode(() => new ProxyReferenceType(referenceFields, valueFields)).Throws<ArgumentException>();
+        }
+
+        [Fact]
+        public void Should_be_able_to_add_both_ref_and_value_field_manualy_ctor()
+        {
+            //Given
+            //When
+            var refType = new OneEachFieldReferenceType();
+
+            //Then
+            var _ = refType.GetValue("valueFieldName");
+        }
+
+        [Fact]
+        public void Should_not_be_able_to_add_both_ref_and_value_field_with_same_name_from_manual_ctor()
+        {
+            //Given
+            //When
+            //Then
+            Check.ThatCode(() => new ConflictFieldNameRefThenValueReferenceType()).Throws<ArgumentException>();
+            Check.ThatCode(() => new ConflictFieldNameValueThenRefReferenceType()).Throws<ArgumentException>();
+        }
+
+        [Fact]
+        public void Should_be_able_to_retreive_reference_field()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
             var fieldValue = new ProxyReferenceType();
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {dummyFieldName , fieldValue},
+            };
 
             //When
-            refType.AddField(dummyFieldName, fieldValue);
+            var refType = new ProxyReferenceType(referenceFields);
 
             //Then
             var retreivedValue = refType.GetReference(dummyFieldName);
-            Check.That(fieldValue).IsSameReferenceAs(retreivedValue);
+            Check.That(retreivedValue).IsSameReferenceAs(fieldValue);
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_value_field_value()
+        public void Should_be_able_to_retreive_value_field()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
-            byte fieldValue = 255;
+            var fieldValue = 255;
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {dummyFieldName , fieldValue},
+            };
 
             //When
-            refType.AddField(dummyFieldName, fieldValue);
+            var refType = new ProxyReferenceType(valueFields);
 
             //Then
             var retreivedValue = refType.GetValue(dummyFieldName);
-            Check.That(fieldValue).IsEqualTo(255);
+            Check.That(retreivedValue).IsEqualTo(fieldValue);
         }
 
         [Fact]
@@ -132,48 +197,57 @@ namespace Gc.Core.Tests
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_reference_field_value_after_set()
+        public void Should_be_able_to_retreive_reference_field_after_set()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
-            var initialValue = new ProxyReferenceType();
-
-            refType.AddField(dummyFieldName, initialValue);
             var fieldValue = new ProxyReferenceType();
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {dummyFieldName , fieldValue},
+            };
+            var refType = new ProxyReferenceType(referenceFields);
 
             //When
             refType.SetField(dummyFieldName, fieldValue);
+            var retreivedValue = refType.GetReference(dummyFieldName);
 
             //Then
-            var retreivedValue = refType.GetReference(dummyFieldName);
             Check.That(retreivedValue).IsSameReferenceAs(fieldValue);
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_value_field_value_after_set()
+        public void Should_be_able_to_retreive_value_field_after_set()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
-            var initialValue = (false, 3);
+            var initialValue = (true, 76876786);
+            var fieldValue = (false, 3);
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {dummyFieldName , initialValue},
+            };
+            var refType = new ProxyReferenceType(valueFields);
 
             //When
-            refType.AddField(dummyFieldName, initialValue);
+            refType.SetField(dummyFieldName, fieldValue);
+            var retreivedValue = refType.GetValue(dummyFieldName);
 
             //Then
-            var retreivedValue = refType.GetValue(dummyFieldName);
             Check.That(retreivedValue).IsEqualTo((false, 3));
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_last_reference_field_value_after_multiple_set()
+        public void Should_be_able_to_retreive_last_reference_field_after_multiple_set()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
             var initialValue = new ProxyReferenceType();
-            refType.AddField(dummyFieldName, initialValue);
+            Dictionary<string, ReferenceType> referenceFields = new Dictionary<string, ReferenceType>
+            {
+                {dummyFieldName , initialValue},
+            };
+            var refType = new ProxyReferenceType(referenceFields);
             var fieldValue = new ProxyReferenceType();
             var fieldValue2 = new ProxyReferenceType();
             var fieldValue3 = new ProxyReferenceType();
@@ -192,19 +266,25 @@ namespace Gc.Core.Tests
         }
 
         [Fact]
-        public void Should_be_able_to_retreive_last_value_field_value_after_multiple_set()
+        public void Should_be_able_to_retreive_last_value_field_after_multiple_set()
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
-            refType.AddField(dummyFieldName, (false, 1));
+            var initialValue = (false, 0);
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {dummyFieldName , initialValue},
+            };
+            var refType = new ProxyReferenceType(valueFields);
 
             //When
             refType.SetField(dummyFieldName, (true, 3));
+            refType.SetField(dummyFieldName, (false, 3));
+            refType.SetField(dummyFieldName, (false, 5));
 
             //Then
             var retreivedValue = refType.GetValue(dummyFieldName);
-            Check.That(retreivedValue).IsEqualTo((true, 3));
+            Check.That(retreivedValue).IsEqualTo((false, 5));
         }
 
         [Fact]
@@ -212,8 +292,12 @@ namespace Gc.Core.Tests
         {
             //Given
             const string dummyFieldName = "dummyField";
-            var refType = new ProxyReferenceType();
-            refType.AddField(dummyFieldName, (false, 1));
+            var initialValue = (false, 0);
+            Dictionary<string, ValueType> valueFields = new Dictionary<string, ValueType>
+            {
+                {dummyFieldName , initialValue},
+            };
+            var refType = new ProxyReferenceType(valueFields);
 
             //When Then
             Check.ThatCode(() => refType.SetField(dummyFieldName, (sbyte)-3)).Throws<ArgumentException>();

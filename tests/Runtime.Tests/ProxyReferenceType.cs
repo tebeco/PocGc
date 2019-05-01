@@ -1,10 +1,27 @@
 ﻿using Runtime;
 using System;
+using System.Collections.Generic;
 
-namespace Gc.Core.Tests
+namespace Runtime.Tests
 {
     public class ProxyReferenceType : ReferenceType
     {
+        public ProxyReferenceType() : base()
+        {
+        }
+
+        public ProxyReferenceType(Dictionary<string, ReferenceType> referenceFields) : base(referenceFields)
+        {
+        }
+
+        public ProxyReferenceType(Dictionary<string, ValueType> valueFields) : base(valueFields)
+        {
+        }
+
+        public ProxyReferenceType(Dictionary<string, ReferenceType> referenceFields, Dictionary<string, ValueType> valueFields) : base(referenceFields, valueFields)
+        {
+        }
+
         public new void AddField(string fieldName, ReferenceType initialValue)
         {
             base.AddField(fieldName, initialValue);

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace Runtime
 {
@@ -9,14 +8,71 @@ namespace Runtime
     {
         private readonly Dictionary<string, ReferenceType> _referenceFields = new Dictionary<string, ReferenceType>();
         private readonly Dictionary<string, ValueType> _valueFields = new Dictionary<string, ValueType>();
+        private readonly bool _fieldsSealed = false;
 
-        protected void AddField(string fieldName, ReferenceType initialValue)
+        public ReferenceType()
         {
+            InitializeField();
+            _fieldsSealed = true;
+        }
+
+        public ReferenceType(Dictionary<string, ReferenceType> referenceFields)
+        {
+            referenceFields.ToList().ForEach(field => AddField(field.Key, field.Value));
+
+            InitializeField();
+            _fieldsSealed = true;
+        }
+
+        public ReferenceType(Dictionary<string, ValueType> valueFields)
+        {
+            valueFields.ToList().ForEach(field => AddField(field.Key, field.Value));
+
+            InitializeField();
+            _fieldsSealed = true;
+        }
+
+        public ReferenceType(Dictionary<string, ReferenceType> referenceFields, Dictionary<string, ValueType> valueFields)
+        {
+            referenceFields.ToList().ForEach(field => AddField(field.Key, field.Value));
+            valueFields.ToList().ForEach(field => AddField(field.Key, field.Value));
+
+            InitializeField();
+            _fieldsSealed = true;
+        }
+
+        protected virtual void InitializeField()
+        {
+
+        }
+
+        protected internal void AddField(string fieldName, ReferenceType initialValue)
+        {
+            if (_fieldsSealed)
+            {
+                throw new InvalidOperationException("Can only add field with constructor");
+            }
+
+            if (_valueFields.ContainsKey(fieldName))
+            {
+                throw new ArgumentException($"The field {fieldName} already exists.");
+            }
+
             _referenceFields.Add(fieldName, initialValue);
         }
 
-        protected void AddField(string fieldName, ValueType initialValue)
+        protected internal void AddField(string fieldName, ValueType initialValue)
         {
+            if (_fieldsSealed)
+            {
+                throw new InvalidOperationException("Can only add field with constructor");
+            }
+
+            if(_referenceFields.ContainsKey(fieldName))
+            {
+                throw new ArgumentException($"The field {fieldName} already exists.");
+            }
+
             _valueFields.Add(fieldName, initialValue);
         }
 
@@ -40,7 +96,7 @@ namespace Runtime
             var oldType = _valueFields[fieldName].GetType();
             var newType = newValue.GetType();
 
-            if(oldType != newType)
+            if (oldType != newType)
             {
                 throw new ArgumentException($"the new value for field {fieldName} does not have the same type as the previous value.");
             }
