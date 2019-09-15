@@ -1,4 +1,4 @@
-namespace Gc.Core
+namespace Runtime.Reflexion
 {
     public abstract class TypeMetadata
     {

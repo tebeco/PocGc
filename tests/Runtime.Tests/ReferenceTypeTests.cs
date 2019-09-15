@@ -9,29 +9,6 @@ namespace Runtime.Tests
     public class ReferenceTypeTests
     {
         [Fact]
-        public void Should_not_be_able_to_add_reference_field_after_ctor()
-        {
-            //Given
-            var refType = new ProxyReferenceType();
-            var initialValue = new ProxyReferenceType();
-
-            //When
-            //Then
-            Check.ThatCode(() => refType.AddField("dummyField", initialValue)).Throws<InvalidOperationException>();
-        }
-
-        [Fact]
-        public void Should_not_be_able_to_add_vakue_field_after_ctor()
-        {
-            //Given
-            var refType = new ProxyReferenceType();
-
-            //When
-            //Then
-            Check.ThatCode(() => refType.AddField("dummyField", 1)).Throws<InvalidOperationException>();
-        }
-
-        [Fact]
         public void Should_be_able_to_add_instance_reference_field_with_initial_value()
         {
             //Given
@@ -93,27 +70,6 @@ namespace Runtime.Tests
             //When
             //Then
             Check.ThatCode(() => new ProxyReferenceType(referenceFields, valueFields)).Throws<ArgumentException>();
-        }
-
-        [Fact]
-        public void Should_be_able_to_add_both_ref_and_value_field_manualy_ctor()
-        {
-            //Given
-            //When
-            var refType = new OneEachFieldReferenceType();
-
-            //Then
-            var _ = refType.GetValue("valueFieldName");
-        }
-
-        [Fact]
-        public void Should_not_be_able_to_add_both_ref_and_value_field_with_same_name_from_manual_ctor()
-        {
-            //Given
-            //When
-            //Then
-            Check.ThatCode(() => new ConflictFieldNameRefThenValueReferenceType()).Throws<ArgumentException>();
-            Check.ThatCode(() => new ConflictFieldNameValueThenRefReferenceType()).Throws<ArgumentException>();
         }
 
         [Fact]

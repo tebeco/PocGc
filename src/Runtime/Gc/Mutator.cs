@@ -1,6 +1,6 @@
 using System;
 
-namespace Gc.Core
+namespace Runtime.Gc
 {
     public class Mutator
     {

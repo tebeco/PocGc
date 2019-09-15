@@ -1,4 +1,4 @@
-namespace Gc.Core
+namespace RunTime.Reflexion
 {
     public class TypeLoader
     {

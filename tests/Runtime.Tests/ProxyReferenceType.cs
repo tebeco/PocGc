@@ -22,16 +22,6 @@ namespace Runtime.Tests
         {
         }
 
-        public new void AddField(string fieldName, ReferenceType initialValue)
-        {
-            base.AddField(fieldName, initialValue);
-        }
-
-        public new void AddField(string fieldName, ValueType initialValue)
-        {
-            base.AddField(fieldName, initialValue);
-        }
-
         public new void SetField(string fieldName, ReferenceType newValue)
         {
             base.SetField(fieldName, newValue);

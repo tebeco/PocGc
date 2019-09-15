@@ -9,7 +9,9 @@ namespace SampleApp
     {
         public override void Run()
         {
-            
+            var x = new TwoCharString('c', 'd');
+            Console.WriteLine(x.GetValue("charOne"));
+            Console.WriteLine(x.GetValue("charTwo"));
         }
     }
 }
